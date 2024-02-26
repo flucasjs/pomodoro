@@ -1,0 +1,11 @@
+.theme-color-red {
+  --color-primary: var(--soft-red);
+}
+
+.theme-color-cyan {
+  --color-primary: var(--soft-cyan);
+}
+
+.theme-color-violet {
+  --color-primary: var(--soft-violet);
+}
