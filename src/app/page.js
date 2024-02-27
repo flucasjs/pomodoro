@@ -85,8 +85,8 @@ export default function Home() {
     pomodoro: "25",
     shortBreak: "5",
     longBreak: "15",
-    color: "",
-    font: "",
+    color: "#F87070",
+    font: "font-kumbh-sans",
   });
   const tabs = ["pomodoro", "shortBreak", "longBreak"];
   const timers = React.useMemo(
@@ -258,6 +258,13 @@ export default function Home() {
     });
   }
 
+  function handleFontSettings(font) {
+    setSettings((prev) => ({
+      ...prev,
+      font,
+    }));
+  }
+  
   function resetWithSettings(time) {
     controls.stop();
     controls.set({ pathLength: 0 });
@@ -267,7 +274,7 @@ export default function Home() {
   }
 
   return (
-    <div className="container flex flex-col items-center pt-8 font-kumbh-sans">
+    <div className={`container flex flex-col items-center pt-8 ${settings.font}`}>
       <div className="w-[137px] h-6 mb-[45px]">
         <Image src={logo} alt="" />
       </div>
@@ -341,7 +348,7 @@ export default function Home() {
         } absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[500px] bg-white rounded-[25px]`}
       >
         <div className="flex items-center pt-[34px] px-[40px] justify-between mb-[30px]">
-          <span className="font-kumbh-sans font-bold text-[26px]">
+          <span className={`font-bold text-[26px] ${settings.font}`}>
             Settings
           </span>
           <button
@@ -353,7 +360,7 @@ export default function Home() {
         </div>
         <div className="w-full h-[1px] bg-[#E3E1E1] mb-6"></div>
         <div className="px-[40px]">
-          <span className="font-kumbh-sans font-bold text-[13px] tracking-[5px] mb-[26px] inline-block">
+          <span className={`font-bold text-[13px] tracking-[5px] mb-[26px] inline-block ${settings.font}`}>
             TIME (MINUTES)
           </span>
           <form className="flex justify-between mb-6">
@@ -367,7 +374,7 @@ export default function Home() {
                   placeholder="25"
                   value={settings.pomodoro}
                   onChange={(e) => handleTimeSettings(e, "pomodoro")}
-                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-kumbh-sans font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none"
+                  className={`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none ${settings.font}`}
                 />
                 <div className="flex flex-col items-center justify-between">
                   <button
@@ -397,7 +404,7 @@ export default function Home() {
                   placeholder="5"
                   value={settings.shortBreak}
                   onChange={(e) => handleTimeSettings(e, "shortBreak")}
-                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-kumbh-sans font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none"
+                  className={`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none ${settings.font}`}
                 />
                 <div className="flex flex-col items-center justify-between">
                   <button
@@ -427,7 +434,7 @@ export default function Home() {
                   placeholder="15"
                   value={settings.longBreak}
                   onChange={(e) => handleTimeSettings(e, "longBreak")}
-                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-kumbh-sans font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none"
+                  className={`appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none ${settings.font}`}
                 />
                 <div className="flex flex-col items-center justify-between">
                   <button
@@ -452,18 +459,18 @@ export default function Home() {
           <div className="flex items-center justify-between mb-7">
             <span className="font-bold text-[13px] tracking-[5px]">FONT</span>
             <div className="font-bold text-[15px] flex gap-x-4">
-              <button className="flex rounded-full bg-[#161932] w-10 h-10 aspect-square items-center justify-center">
-                <span className="text-white select-none font-kumbh-sans">
+              <button onClick={() => handleFontSettings("font-kumbh-sans")} className={`fflex rounded-full w-10 h-10 aspect-square items-center justify-center ${settings.font} ${settings.font === 'font-kumbh-sans' ? 'bg-[#161932]' : 'bg-[#EFF1FA]'}`}>
+                <span className={`select-none font-kumbh-sans ${settings.font === 'font-kumbh-sans' ? 'text-white bg-[#161932]' : 'text-[#1E213F] opacity-[0.75]'}`}>
                   Aa
                 </span>
               </button>
-              <button className="flex rounded-full bg-[#EFF1FA] w-10 h-10 aspect-square items-center justify-center">
-                <span className="select-none font-roboto-slab text-[#1E213F] opacity-[0.75]">
+              <button onClick={() => handleFontSettings("font-roboto-slab")} className={`fflex rounded-full w-10 h-10 aspect-square items-center justify-center ${settings.font} ${settings.font === 'font-roboto-slab' ? 'bg-[#161932]' : 'bg-[#EFF1FA]'}`}>
+                <span className={`select-none font-roboto-slab ${settings.font === 'font-roboto-slab' ? 'text-white bg-[#161932]' : 'text-[#1E213F] opacity-[0.75]'}`}>
                   Aa
                 </span>
               </button>
-              <button className="flex rounded-full bg-[#EFF1FA] w-10 h-10 aspect-square items-center justify-center">
-                <span className="select-none font-space-mono text-[#1E213F] opacity-[0.75]">
+              <button onClick={() => handleFontSettings("font-space-mono")} className={`fflex rounded-full w-10 h-10 aspect-square items-center justify-center ${settings.font} ${settings.font === 'font-space-mono' ? 'bg-[#161932]' : 'bg-[#EFF1FA]'}`}>
+                <span className={`select-none font-space-mono ${settings.font === 'font-space-mono' ? 'text-white bg-[#161932]' : 'text-[#1E213F] opacity-[0.75]'}`}>
                   Aa
                 </span>
               </button>
@@ -473,14 +480,14 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <span className="font-bold text-[13px] tracking-[5px]">COLOR</span>
             <div className="font-bold text-[15px] flex gap-x-4">
-              <button className="flex rounded-full bg-[#F87070] w-10 h-10 aspect-square items-center justify-center">
-                <span className="select-none font-kumbh-sans">✓</span>
+              <button onClick={() => setColorSettings('#F87070')} className="flex rounded-full bg-[#F87070] w-10 h-10 aspect-square items-center justify-center">
+                <span className="select-none font-kumbh-sans">{settings.color === '#F87070' ? '✓' : ''}</span>
               </button>
-              <button className="flex rounded-full bg-[#70F3F8] w-10 h-10 aspect-square items-center justify-center">
-                <span className="select-none font-roboto-slab">✓</span>
+              <button onClick={() => setColorSettings('#70F3F8')} className="flex rounded-full bg-[#70F3F8] w-10 h-10 aspect-square items-center justify-center">
+                <span className="select-none font-roboto-slab">{settings.color === '#70F3F8' ? '✓' : ''}</span>
               </button>
-              <button className="flex rounded-full bg-[#D881F8] w-10 h-10 aspect-square items-center justify-center">
-                <span className="select-none font-space-mono">✓</span>
+              <button onClick={() => setColorSettings('#D881F8')} className="flex rounded-full bg-[#D881F8] w-10 h-10 aspect-square items-center justify-center">
+                <span className="select-none font-space-mono">{settings.color === '#D881F8' ? '✓' : ''}</span>
               </button>
             </div>
           </div>
