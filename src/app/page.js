@@ -95,7 +95,7 @@ export default function Home() {
       shortBreak: settings.shortBreak * 60,
       longBreak: settings.longBreak * 60,
     }),
-    [settings]
+    [settings.pomodoro, settings.shortBreak, settings.longBreak]
   );
   const [selected, setSelected] = React.useState(tabs[0]);
   const [debounce, setDebounce] = React.useState(false);
@@ -121,13 +121,13 @@ export default function Home() {
       const jsConfetti = new JSConfetti();
       jsConfetti
         .addConfetti({
-          confettiColors: ["#f87171"],
+          confettiColors: [settings.color],
           confettiRadius: 6,
           confettiNumber: 300,
         })
         .then(() => jsConfetti.clearCanvas());
     }
-  }, [selected]);
+  }, [selected, settings.color]);
 
   React.useEffect(() => {
     if (t.state === "waiting") {
@@ -264,6 +264,13 @@ export default function Home() {
       font,
     }));
   }
+
+  function handleColorSettings(color) {
+    setSettings((prev) => ({
+      ...prev,
+      color,
+    }));
+  }
   
   function resetWithSettings(time) {
     controls.stop();
@@ -274,35 +281,35 @@ export default function Home() {
   }
 
   return (
-    <div className={`container flex flex-col items-center pt-8 ${settings.font}`}>
-      <div className="w-[137px] h-6 mb-[45px]">
-        <Image src={logo} alt="" />
+    <div className={`container flex flex-col items-center pt-8 md:pt-12 lg:pt-14 ${settings.font}`}>
+      <div className="w-[137px] h-6 mb-[45px] md:w-[156] md:h-8">
+        <Image src={logo} className="w-full h-full" alt="" />
       </div>
-      <div className="mb-12 rounded-[32px] px-[6px] py-2 bg-foreground text-white flex items-center justify-between text-[12px] font-bold z-[10]">
+      <div className="mb-12 md:mb-20 lg:mb-24 rounded-[32px] px-[0.375rem] md:px-2 py-2 bg-foreground text-white flex items-center justify-between text-[0.75rem] md:text-[0.875rem] font-bold z-[10]">
         {tabs.map((tab) => (
           <motion.button
             key={tab}
             onClick={() => handleSelected(tab)}
-            className={`relative py-[18px] px-[22px]`}
+            className={`relative py-[18px] px-[22px] md:px-[26px] md:py-4`}
           >
             <span
               className={`${
-                selected === tab ? "text-background" : "text-blue-300"
-              } z-[10] relative transition-colors duration-75 ease-linear delay-75`}
+                selected === tab ? "text-background" : "text-blue-300 hover:text-[#D7E0FF] text-opacity-40"
+              } z-[10] relative transition-[colors_opacity] duration-75 ease-linear delay-75`}
             >
               {tab.replace("Break", " break")}
             </span>
             {selected === tab ? (
               <motion.div
                 transition={{ type: "tween", ease: "easeIn", duration: 0.15 }}
-                className="absolute w-full h-full bg-red-400 rounded-[28px] text-blue-950 z-0 top-0 left-0"
+                className={`absolute w-full h-full rounded-[28px] text-blue-950 z-0 top-0 left-0 bg-[${settings.color}]`}
                 layoutId="tab"
               />
             ) : null}
           </motion.button>
         ))}
       </div>
-      <div className="w-[300px] h-[300px] text-blue-200 rounded-full mb-[79px] p-4 bg-gradient-linear shadow-dark-blue">
+      <div className="w-[300px] h-[300px] md:w-[410px] md:h-[410px] text-blue-200 rounded-full mb-20 p-4 bg-gradient-linear shadow-dark-blue">
         <button
           onClick={handleClick}
           disabled={debounce}
@@ -314,23 +321,44 @@ export default function Home() {
               version="1.1"
               className="w-full h-full rounded-full select-none"
             >
-              <motion.path
-                className="stroke-red-400"
+            {
+              settings.color === "#F87070" ? (
+                <motion.path
+                className={`stroke-[#F87070] stroke-[7px] md:stroke-[14px]`}
                 fill="none"
-                strokeWidth={7}
                 strokeLinecap="round"
                 animate={controls}
                 style={{ pathLength }}
                 d={d}
               />
+              ) : (settings.color === "#70F3F8" ? (
+                <motion.path
+                className={`stroke-[#70F3F8] stroke-[7px] md:stroke-[14px]`}
+                fill="none"
+                strokeLinecap="round"
+                animate={controls}
+                style={{ pathLength }}
+                d={d}
+              />
+              ) : (
+                <motion.path
+                className={`stroke-[#D881F8] stroke-[7px] md:stroke-[14px]`}
+                fill="none"
+                strokeLinecap="round"
+                animate={controls}
+                style={{ pathLength }}
+                d={d}
+              />
+              ))
+            }
             </motion.svg>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-[80px] font-bold leading-tight mb-3">
+            <div className={`text-[5rem] md:text-[6.25rem] text-blue font-bold leading-tight mb-3`}>
               {String(Math.floor(countdown / 60))}:
               {String(countdown % 60).padStart(2, 0)}
             </div>
-            <div className="font-bold text-[14px] tracking-[0.925em] indent-[0.925em]">
+            <div className={`font-bold text-[0.875rem] tracking-[0.925em] indent-[0.925em] md:text-base xl:text-[1.125rem] hover:text-[${settings.color}] transition-colors duration-150 z-10`}>
               {setLabel(t.state, time)}
             </div>
           </div>
@@ -480,13 +508,13 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <span className="font-bold text-[13px] tracking-[5px]">COLOR</span>
             <div className="font-bold text-[15px] flex gap-x-4">
-              <button onClick={() => setColorSettings('#F87070')} className="flex rounded-full bg-[#F87070] w-10 h-10 aspect-square items-center justify-center">
+              <button onClick={() => handleColorSettings('#F87070')} className="flex rounded-full bg-[#F87070] w-10 h-10 aspect-square items-center justify-center">
                 <span className="select-none font-kumbh-sans">{settings.color === '#F87070' ? '✓' : ''}</span>
               </button>
-              <button onClick={() => setColorSettings('#70F3F8')} className="flex rounded-full bg-[#70F3F8] w-10 h-10 aspect-square items-center justify-center">
+              <button onClick={() => handleColorSettings('#70F3F8')} className="flex rounded-full bg-[#70F3F8] w-10 h-10 aspect-square items-center justify-center">
                 <span className="select-none font-roboto-slab">{settings.color === '#70F3F8' ? '✓' : ''}</span>
               </button>
-              <button onClick={() => setColorSettings('#D881F8')} className="flex rounded-full bg-[#D881F8] w-10 h-10 aspect-square items-center justify-center">
+              <button onClick={() => handleColorSettings('#D881F8')} className="flex rounded-full bg-[#D881F8] w-10 h-10 aspect-square items-center justify-center">
                 <span className="select-none font-space-mono">{settings.color === '#D881F8' ? '✓' : ''}</span>
               </button>
             </div>
