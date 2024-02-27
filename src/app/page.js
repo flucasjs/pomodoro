@@ -82,18 +82,21 @@ export default function Home() {
   const pathLength = useMotionValue(0);
   const [settingsToggle, setSettingsToggle] = React.useState(false);
   const [settings, setSettings] = React.useState({
-    pomodoro: "",
-    "short break": "",
-    "long break": "",
+    pomodoro: "25",
+    shortBreak: "5",
+    longBreak: "15",
     color: "",
     font: "",
   });
-  const tabs = ["pomodoro", "short break", "long break"];
-  const timers = React.useMemo(() => ({
-    "pomodoro": 1500,
-    "short break": 300,
-    "long break": 900,
-  }), []);
+  const tabs = ["pomodoro", "shortBreak", "longBreak"];
+  const timers = React.useMemo(
+    () => ({
+      pomodoro: settings.pomodoro * 60,
+      shortBreak: settings.shortBreak * 60,
+      longBreak: settings.longBreak * 60,
+    }),
+    [settings]
+  );
   const [selected, setSelected] = React.useState(tabs[0]);
   const [debounce, setDebounce] = React.useState(false);
 
@@ -150,11 +153,11 @@ export default function Home() {
         if (s > 1) {
           return s - 1;
         } else {
-          dispatch({type: "done"});
+          dispatch({ type: "done" });
           launchConfetti();
           return 0;
         }
-      })
+      });
     }
 
     return () => {
@@ -219,7 +222,7 @@ export default function Home() {
 
   function handleSelected(tab) {
     controls.stop();
-    controls.set({pathLength: 0});
+    controls.set({ pathLength: 0 });
     setSelected(tab);
     setCountdown(timers[tab]);
     setTime(timers[tab]);
@@ -228,7 +231,40 @@ export default function Home() {
     });
   }
 
-  function handleSettingsClick() {}
+  function handleTimeSettings(e, timerType) {
+    if (!/^\d+$/.test(e.target.value)) {
+      return;
+    }
+
+    setSettings((prev) => ({
+      ...prev,
+      [timerType]: e.target.value,
+    }));
+
+    if (selected === timerType) {
+      resetWithSettings(e.target.value);
+    }
+  }
+
+  function handleTimeSettingsClick(value, timerType) {
+    setSettings((prev) => {
+      if (selected === timerType) {
+        resetWithSettings(parseInt(prev[timerType]) + value);
+      }
+      return {
+        ...prev,
+        [timerType]: parseInt(prev[timerType]) + value,
+      }
+    });
+  }
+
+  function resetWithSettings(time) {
+    controls.stop();
+    controls.set({ pathLength: 0 });
+    dispatch({type: "waiting"});
+    setTime(time * 60);
+    setCountdown(time * 60);
+  }
 
   return (
     <div className="container flex flex-col items-center pt-8 font-kumbh-sans">
@@ -247,7 +283,7 @@ export default function Home() {
                 selected === tab ? "text-background" : "text-blue-300"
               } z-[10] relative transition-colors duration-75 ease-linear delay-75`}
             >
-              {tab}
+              {tab.replace("Break", " break")}
             </span>
             {selected === tab ? (
               <motion.div
@@ -284,7 +320,8 @@ export default function Home() {
           </div>
           <div className="flex flex-col items-center">
             <div className="text-[80px] font-bold leading-tight mb-3">
-              {String(Math.floor(countdown / 60))}:{String(countdown % 60).padStart(2, 0)}
+              {String(Math.floor(countdown / 60))}:
+              {String(countdown % 60).padStart(2, 0)}
             </div>
             <div className="font-bold text-[14px] tracking-[0.925em] indent-[0.925em]">
               {setLabel(t.state, time)}
@@ -319,20 +356,32 @@ export default function Home() {
           <span className="font-kumbh-sans font-bold text-[13px] tracking-[5px] mb-[26px] inline-block">
             TIME (MINUTES)
           </span>
-          <div className="flex justify-between mb-6">
+          <form className="flex justify-between mb-6">
             <div>
               <span className="text-[12px] text-blue-300 mb-[10px] inline-block">
                 pomodoro
               </span>
               <div className="flex bg-[#EFF1FA] justify-between px-4 pt-4 pb-5 w-[140px] rounded-[10px]">
-                <span className="font-kumbh-sans font-bold text-[14px] color-[#1E213F]">
-                  25
-                </span>
+                <input
+                  type="number"
+                  placeholder="25"
+                  value={settings.pomodoro}
+                  onChange={(e) => handleTimeSettings(e, "pomodoro")}
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-kumbh-sans font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none"
+                />
                 <div className="flex flex-col items-center justify-between">
-                  <button className="w-3 h-1">
+                  <button
+                    type="button"
+                    onClick={() => handleTimeSettingsClick(1, "pomodoro")}
+                    className="w-3 h-1"
+                  >
                     <Image src={arrowUp} alt="" className="select-none" />
                   </button>
-                  <button className="w-3 h-1">
+                  <button
+                    type="button"
+                    onClick={() => handleTimeSettingsClick(-1, "pomodoro")}
+                    className="w-3 h-1"
+                  >
                     <Image src={arrowDown} alt="" className="select-none" />
                   </button>
                 </div>
@@ -343,14 +392,26 @@ export default function Home() {
                 short break
               </span>
               <div className="flex bg-[#EFF1FA] justify-between px-4 pt-4 pb-5 w-[140px] rounded-[10px]">
-                <span className="font-kumbh-sans font-bold text-[14px] color-[#1E213F]">
-                  5
-                </span>
+                <input
+                  type="number"
+                  placeholder="5"
+                  value={settings.shortBreak}
+                  onChange={(e) => handleTimeSettings(e, "shortBreak")}
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-kumbh-sans font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none"
+                />
                 <div className="flex flex-col items-center justify-between">
-                  <button className="w-3 h-1">
+                  <button
+                    type="button"
+                    onClick={() => handleTimeSettingsClick(1, "shortBreak")}
+                    className="w-3 h-1"
+                  >
                     <Image src={arrowUp} alt="" className="select-none" />
                   </button>
-                  <button className="w-3 h-1">
+                  <button
+                    type="button"
+                    onClick={() => handleTimeSettingsClick(-1, "shortBreak")}
+                    className="w-3 h-1"
+                  >
                     <Image src={arrowDown} alt="" className="select-none" />
                   </button>
                 </div>
@@ -361,20 +422,32 @@ export default function Home() {
                 long break
               </span>
               <div className="flex bg-[#EFF1FA] justify-between px-4 pt-4 pb-5 w-[140px] rounded-[10px]">
-                <span className="font-kumbh-sans font-bold text-[14px] color-[#1E213F]">
-                  15
-                </span>
+                <input
+                  type="number"
+                  placeholder="15"
+                  value={settings.longBreak}
+                  onChange={(e) => handleTimeSettings(e, "longBreak")}
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-kumbh-sans font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none"
+                />
                 <div className="flex flex-col items-center justify-between">
-                  <button className="w-3 h-1">
+                  <button
+                    type="button"
+                    onClick={() => handleTimeSettingsClick(1, "longBreak")}
+                    className="w-3 h-1"
+                  >
                     <Image src={arrowUp} alt="" className="select-none" />
                   </button>
-                  <button className="w-3 h-1">
+                  <button
+                    type="button"
+                    onClick={() => handleTimeSettingsClick(-1, "longBreak")}
+                    className="w-3 h-1"
+                  >
                     <Image src={arrowDown} alt="" className="select-none" />
                   </button>
                 </div>
               </div>
             </div>
-          </div>
+          </form>
           <div className="w-full h-[1px] bg-[#161932] opacity-10 mb-7"></div>
           <div className="flex items-center justify-between mb-7">
             <span className="font-bold text-[13px] tracking-[5px]">FONT</span>
