@@ -14,6 +14,7 @@ import gear from "../../public/icons/icon-settings.svg";
 import close from "../../public/icons/icon-close.svg";
 import arrowDown from "../../public/icons/icon-arrow-down.svg";
 import arrowUp from "../../public/icons/icon-arrow-up.svg";
+import Tabs from "@/components/Tabs";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -88,7 +89,7 @@ export default function Home() {
     color: "#F87070",
     font: "font-kumbh-sans",
   });
-  const tabs = ["pomodoro", "shortBreak", "longBreak"];
+
   const timers = React.useMemo(
     () => ({
       pomodoro: settings.pomodoro * 60,
@@ -97,13 +98,14 @@ export default function Home() {
     }),
     [settings.pomodoro, settings.shortBreak, settings.longBreak]
   );
-  const [selected, setSelected] = React.useState(tabs[0]);
+  
+  const [selectedTab, setSelectedTab] = React.useState("pomodoro");
   const [debounce, setDebounce] = React.useState(false);
 
   useMotionValueEvent(pathLength, "animationCancel", () => {
-    setTime(timers[selected] - pathLength.get() * timers[selected]);
+    setTime(timers[selectedTab] - pathLength.get() * timers[selectedTab]);
     setCountdown(
-      Math.ceil(timers[selected] - pathLength.get() * timers[selected])
+      Math.ceil(timers[selectedTab] - pathLength.get() * timers[selectedTab])
     );
   });
 
@@ -117,7 +119,7 @@ export default function Home() {
   }, []);
 
   const launchConfetti = React.useCallback(() => {
-    if (selected === "pomodoro") {
+    if (selectedTab === "pomodoro") {
       const jsConfetti = new JSConfetti();
       jsConfetti
         .addConfetti({
@@ -127,14 +129,14 @@ export default function Home() {
         })
         .then(() => jsConfetti.clearCanvas());
     }
-  }, [selected, settings.color]);
+  }, [selectedTab, settings.color]);
 
   React.useEffect(() => {
     if (t.state === "waiting") {
-      setCountdown(timers[selected]);
-      setTime(timers[selected]);
+      setCountdown(timers[selectedTab]);
+      setTime(timers[selectedTab]);
     }
-  }, [t, selected, timers]);
+  }, [t, selectedTab, timers]);
 
   React.useEffect(() => {
     let timeoutID = 0;
@@ -223,7 +225,7 @@ export default function Home() {
   function handleSelected(tab) {
     controls.stop();
     controls.set({ pathLength: 0 });
-    setSelected(tab);
+    setSelectedTab(tab);
     setCountdown(timers[tab]);
     setTime(timers[tab]);
     dispatch({
@@ -241,14 +243,14 @@ export default function Home() {
       [timerType]: e.target.value,
     }));
 
-    if (selected === timerType) {
+    if (selectedTab === timerType) {
       resetWithSettings(e.target.value);
     }
   }
 
   function handleTimeSettingsClick(value, timerType) {
     setSettings((prev) => {
-      if (selected === timerType) {
+      if (selectedTab === timerType) {
         resetWithSettings(parseInt(prev[timerType]) + value);
       }
       return {
@@ -285,30 +287,7 @@ export default function Home() {
       <div className="w-[137px] h-6 mb-[45px] md:w-[156] md:h-8">
         <Image src={logo} className="w-full h-full" alt="" />
       </div>
-      <div className="mb-12 md:mb-20 lg:mb-24 rounded-[32px] px-[0.375rem] md:px-2 py-2 bg-foreground text-white flex items-center justify-between text-[0.75rem] md:text-[0.875rem] font-bold z-[10]">
-        {tabs.map((tab) => (
-          <motion.button
-            key={tab}
-            onClick={() => handleSelected(tab)}
-            className={`relative py-[18px] px-[22px] md:px-[26px] md:py-4`}
-          >
-            <span
-              className={`${
-                selected === tab ? "text-background" : "text-blue-300 hover:text-[#D7E0FF] text-opacity-40"
-              } z-[10] relative transition-[colors_opacity] duration-75 ease-linear delay-75`}
-            >
-              {tab.replace("Break", " break")}
-            </span>
-            {selected === tab ? (
-              <motion.div
-                transition={{ type: "tween", ease: "easeIn", duration: 0.15 }}
-                className={`absolute w-full h-full rounded-[28px] text-blue-950 z-0 top-0 left-0 bg-[${settings.color}]`}
-                layoutId="tab"
-              />
-            ) : null}
-          </motion.button>
-        ))}
-      </div>
+      <Tabs selectedTab={selectedTab} onTabClick={handleSelected} colorTheme={settings.color} />
       <div className="w-[300px] h-[300px] md:w-[410px] md:h-[410px] text-blue-200 rounded-full mb-20 p-4 bg-gradient-linear shadow-dark-blue">
         <button
           onClick={handleClick}
