@@ -11,10 +11,8 @@ import Image from "next/image";
 import JSConfetti from "js-confetti";
 import logo from "../../public/icons/logo.svg";
 import gear from "../../public/icons/icon-settings.svg";
-import close from "../../public/icons/icon-close.svg";
-import arrowDown from "../../public/icons/icon-arrow-down.svg";
-import arrowUp from "../../public/icons/icon-arrow-up.svg";
 import Tabs from "@/components/Tabs";
+import Settings from "@/components/Settings";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -83,9 +81,9 @@ export default function Home() {
   const pathLength = useMotionValue(0);
   const [settingsToggle, setSettingsToggle] = React.useState(false);
   const [settings, setSettings] = React.useState({
-    pomodoro: "25",
-    shortBreak: "5",
-    longBreak: "15",
+    pomodoro: 25,
+    shortBreak: 5,
+    longBreak: 15,
     color: "#F87070",
     font: "font-kumbh-sans",
   });
@@ -98,7 +96,7 @@ export default function Home() {
     }),
     [settings.pomodoro, settings.shortBreak, settings.longBreak]
   );
-  
+
   const [selectedTab, setSelectedTab] = React.useState("pomodoro");
   const [debounce, setDebounce] = React.useState(false);
 
@@ -233,61 +231,92 @@ export default function Home() {
     });
   }
 
-  function handleTimeSettings(e, timerType) {
-    if (!/^\d+$/.test(e.target.value)) {
-      return;
+  function updateTimerSettings({setting, ...options}) {
+    switch (setting) {
+      case "time": {
+        handleTimeSettings(options);
+        break;
+      }
+      case "font": {
+        handleFontSettings(options);
+        break;
+      }
+      case "color": {
+        handleColorSettings(options);
+        break;
+      }
+      default: {
+        throw new Error("No dispatcher for " + setting);
+      }
     }
 
-    setSettings((prev) => ({
-      ...prev,
-      [timerType]: e.target.value,
-    }));
-
-    if (selectedTab === timerType) {
-      resetWithSettings(e.target.value);
-    }
   }
 
-  function handleTimeSettingsClick(value, timerType) {
+  function handleTimeSettings({ e, value, type: timerType }) {
+    let newTimerValue;
+
+    if (e) {
+      const parsedInputValue = parseInt(e.target.value);
+      if (!parsedInputValue) {
+        return;
+      }
+      newTimerValue = parsedInputValue;
+    }
+
     setSettings((prev) => {
+      newTimerValue ??= Math.max(1, prev[timerType] + value);
       if (selectedTab === timerType) {
-        resetWithSettings(parseInt(prev[timerType]) + value);
+        resetWithSettings(newTimerValue);
       }
       return {
         ...prev,
-        [timerType]: parseInt(prev[timerType]) + value,
-      }
+        [timerType]: newTimerValue,
+      };
     });
   }
 
-  function handleFontSettings(font) {
+  function handleFontSettings({ font }) {
+    if (!font) {
+      return;
+    }
+
     setSettings((prev) => ({
       ...prev,
       font,
     }));
   }
 
-  function handleColorSettings(color) {
+  function handleColorSettings({ color }) {
+    if (!color) {
+      return;
+    }
+
     setSettings((prev) => ({
       ...prev,
       color,
     }));
   }
-  
+
   function resetWithSettings(time) {
     controls.stop();
     controls.set({ pathLength: 0 });
-    dispatch({type: "waiting"});
+    dispatch({ type: "waiting" });
     setTime(time * 60);
     setCountdown(time * 60);
   }
 
   return (
-    <div className={`container flex flex-col items-center pt-8 md:pt-12 lg:pt-14 ${settings.font}`}>
+    <div
+      className={`container flex flex-col items-center pt-8 md:pt-12 lg:pt-14 ${settings.font}`}
+    >
       <div className="w-[137px] h-6 mb-[45px] md:w-[156] md:h-8">
         <Image src={logo} className="w-full h-full" alt="" />
       </div>
-      <Tabs selectedTab={selectedTab} onTabClick={handleSelected} colorTheme={settings.color} />
+      <Tabs
+        selectedTab={selectedTab}
+        onTabClick={handleSelected}
+        colorTheme={settings.color}
+      />
       <div className="w-[300px] h-[300px] md:w-[410px] md:h-[410px] text-blue-200 rounded-full mb-20 p-4 bg-gradient-linear shadow-dark-blue">
         <button
           onClick={handleClick}
@@ -300,44 +329,46 @@ export default function Home() {
               version="1.1"
               className="w-full h-full rounded-full select-none"
             >
-            {
-              settings.color === "#F87070" ? (
+              {settings.color === "#F87070" ? (
                 <motion.path
-                className={`stroke-[#F87070] stroke-[7px] md:stroke-[14px]`}
-                fill="none"
-                strokeLinecap="round"
-                animate={controls}
-                style={{ pathLength }}
-                d={d}
-              />
-              ) : (settings.color === "#70F3F8" ? (
+                  className={`stroke-[#F87070] stroke-[7px] md:stroke-[14px]`}
+                  fill="none"
+                  strokeLinecap="round"
+                  animate={controls}
+                  style={{ pathLength }}
+                  d={d}
+                />
+              ) : settings.color === "#70F3F8" ? (
                 <motion.path
-                className={`stroke-[#70F3F8] stroke-[7px] md:stroke-[14px]`}
-                fill="none"
-                strokeLinecap="round"
-                animate={controls}
-                style={{ pathLength }}
-                d={d}
-              />
+                  className={`stroke-[#70F3F8] stroke-[7px] md:stroke-[14px]`}
+                  fill="none"
+                  strokeLinecap="round"
+                  animate={controls}
+                  style={{ pathLength }}
+                  d={d}
+                />
               ) : (
                 <motion.path
-                className={`stroke-[#D881F8] stroke-[7px] md:stroke-[14px]`}
-                fill="none"
-                strokeLinecap="round"
-                animate={controls}
-                style={{ pathLength }}
-                d={d}
-              />
-              ))
-            }
+                  className={`stroke-[#D881F8] stroke-[7px] md:stroke-[14px]`}
+                  fill="none"
+                  strokeLinecap="round"
+                  animate={controls}
+                  style={{ pathLength }}
+                  d={d}
+                />
+              )}
             </motion.svg>
           </div>
           <div className="flex flex-col items-center">
-            <div className={`text-[5rem] md:text-[6.25rem] text-blue font-bold leading-tight mb-3`}>
+            <div
+              className={`text-[5rem] md:text-[6.25rem] text-blue font-bold leading-tight mb-3`}
+            >
               {String(Math.floor(countdown / 60))}:
               {String(countdown % 60).padStart(2, 0)}
             </div>
-            <div className={`font-bold text-[0.875rem] tracking-[0.925em] indent-[0.925em] md:text-base xl:text-[1.125rem] hover:text-[${settings.color}] transition-colors duration-150 z-10`}>
+            <div
+              className={`font-bold text-[0.875rem] tracking-[0.925em] indent-[0.925em] md:text-base xl:text-[1.125rem] hover:text-[${settings.color}] transition-colors duration-150 z-10`}
+            >
               {setLabel(t.state, time)}
             </div>
           </div>
@@ -349,157 +380,12 @@ export default function Home() {
       >
         <Image src={gear} alt="" className="select-none" />
       </button>
-      <div
-        className={`${
-          settingsToggle ? "block" : "hidden"
-        } absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[500px] bg-white rounded-[25px]`}
-      >
-        <div className="flex items-center pt-[34px] px-[40px] justify-between mb-[30px]">
-          <span className={`font-bold text-[26px] ${settings.font}`}>
-            Settings
-          </span>
-          <button
-            onClick={() => setSettingsToggle(false)}
-            className="w-4 h-4 pt-1"
-          >
-            <Image src={close} alt="" className="select-none" />
-          </button>
-        </div>
-        <div className="w-full h-[1px] bg-[#E3E1E1] mb-6"></div>
-        <div className="px-[40px]">
-          <span className={`font-bold text-[13px] tracking-[5px] mb-[26px] inline-block ${settings.font}`}>
-            TIME (MINUTES)
-          </span>
-          <form className="flex justify-between mb-6">
-            <div>
-              <span className="text-[12px] text-blue-300 mb-[10px] inline-block">
-                pomodoro
-              </span>
-              <div className="flex bg-[#EFF1FA] justify-between px-4 pt-4 pb-5 w-[140px] rounded-[10px]">
-                <input
-                  type="number"
-                  placeholder="25"
-                  value={settings.pomodoro}
-                  onChange={(e) => handleTimeSettings(e, "pomodoro")}
-                  className={`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none ${settings.font}`}
-                />
-                <div className="flex flex-col items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => handleTimeSettingsClick(1, "pomodoro")}
-                    className="w-3 h-1"
-                  >
-                    <Image src={arrowUp} alt="" className="select-none" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleTimeSettingsClick(-1, "pomodoro")}
-                    className="w-3 h-1"
-                  >
-                    <Image src={arrowDown} alt="" className="select-none" />
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div>
-              <span className="text-[12px] text-blue-300 mb-[10px] inline-block">
-                short break
-              </span>
-              <div className="flex bg-[#EFF1FA] justify-between px-4 pt-4 pb-5 w-[140px] rounded-[10px]">
-                <input
-                  type="number"
-                  placeholder="5"
-                  value={settings.shortBreak}
-                  onChange={(e) => handleTimeSettings(e, "shortBreak")}
-                  className={`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none ${settings.font}`}
-                />
-                <div className="flex flex-col items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => handleTimeSettingsClick(1, "shortBreak")}
-                    className="w-3 h-1"
-                  >
-                    <Image src={arrowUp} alt="" className="select-none" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleTimeSettingsClick(-1, "shortBreak")}
-                    className="w-3 h-1"
-                  >
-                    <Image src={arrowDown} alt="" className="select-none" />
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div>
-              <span className="text-[12px] text-blue-300 mb-[10px] inline-block">
-                long break
-              </span>
-              <div className="flex bg-[#EFF1FA] justify-between px-4 pt-4 pb-5 w-[140px] rounded-[10px]">
-                <input
-                  type="number"
-                  placeholder="15"
-                  value={settings.longBreak}
-                  onChange={(e) => handleTimeSettings(e, "longBreak")}
-                  className={`appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-[14px] color-[#1E213F] bg-transparent w-full mr-2 outline-none ${settings.font}`}
-                />
-                <div className="flex flex-col items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => handleTimeSettingsClick(1, "longBreak")}
-                    className="w-3 h-1"
-                  >
-                    <Image src={arrowUp} alt="" className="select-none" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleTimeSettingsClick(-1, "longBreak")}
-                    className="w-3 h-1"
-                  >
-                    <Image src={arrowDown} alt="" className="select-none" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </form>
-          <div className="w-full h-[1px] bg-[#161932] opacity-10 mb-7"></div>
-          <div className="flex items-center justify-between mb-7">
-            <span className="font-bold text-[13px] tracking-[5px]">FONT</span>
-            <div className="font-bold text-[15px] flex gap-x-4">
-              <button onClick={() => handleFontSettings("font-kumbh-sans")} className={`fflex rounded-full w-10 h-10 aspect-square items-center justify-center ${settings.font} ${settings.font === 'font-kumbh-sans' ? 'bg-[#161932]' : 'bg-[#EFF1FA]'}`}>
-                <span className={`select-none font-kumbh-sans ${settings.font === 'font-kumbh-sans' ? 'text-white bg-[#161932]' : 'text-[#1E213F] opacity-[0.75]'}`}>
-                  Aa
-                </span>
-              </button>
-              <button onClick={() => handleFontSettings("font-roboto-slab")} className={`fflex rounded-full w-10 h-10 aspect-square items-center justify-center ${settings.font} ${settings.font === 'font-roboto-slab' ? 'bg-[#161932]' : 'bg-[#EFF1FA]'}`}>
-                <span className={`select-none font-roboto-slab ${settings.font === 'font-roboto-slab' ? 'text-white bg-[#161932]' : 'text-[#1E213F] opacity-[0.75]'}`}>
-                  Aa
-                </span>
-              </button>
-              <button onClick={() => handleFontSettings("font-space-mono")} className={`fflex rounded-full w-10 h-10 aspect-square items-center justify-center ${settings.font} ${settings.font === 'font-space-mono' ? 'bg-[#161932]' : 'bg-[#EFF1FA]'}`}>
-                <span className={`select-none font-space-mono ${settings.font === 'font-space-mono' ? 'text-white bg-[#161932]' : 'text-[#1E213F] opacity-[0.75]'}`}>
-                  Aa
-                </span>
-              </button>
-            </div>
-          </div>
-          <div className="w-full h-[1px] bg-[#161932] opacity-10 mb-7"></div>
-          <div className="flex items-center justify-between">
-            <span className="font-bold text-[13px] tracking-[5px]">COLOR</span>
-            <div className="font-bold text-[15px] flex gap-x-4">
-              <button onClick={() => handleColorSettings('#F87070')} className="flex rounded-full bg-[#F87070] w-10 h-10 aspect-square items-center justify-center">
-                <span className="select-none font-kumbh-sans">{settings.color === '#F87070' ? '✓' : ''}</span>
-              </button>
-              <button onClick={() => handleColorSettings('#70F3F8')} className="flex rounded-full bg-[#70F3F8] w-10 h-10 aspect-square items-center justify-center">
-                <span className="select-none font-roboto-slab">{settings.color === '#70F3F8' ? '✓' : ''}</span>
-              </button>
-              <button onClick={() => handleColorSettings('#D881F8')} className="flex rounded-full bg-[#D881F8] w-10 h-10 aspect-square items-center justify-center">
-                <span className="select-none font-space-mono">{settings.color === '#D881F8' ? '✓' : ''}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Settings
+        settings={settings}
+        setSettingsToggle={setSettingsToggle}
+        settingsToggle={settingsToggle}
+        updateTimerSettings={updateTimerSettings}
+      />
     </div>
   );
 }
