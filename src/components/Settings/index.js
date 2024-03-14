@@ -9,7 +9,7 @@ export default function Settings({ settings, setSettingsToggle, settingsToggle, 
     <div
       className={`${
         settingsToggle ? "block" : "hidden"
-      } absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[500px] bg-white rounded-[25px]`}
+      } absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[500px] bg-white rounded-[25px] z-20`}
     >
       <div className="flex items-center pt-[34px] px-[40px] justify-between mb-[30px]">
         <span className={`font-bold text-[26px] ${settings.font}`}>
